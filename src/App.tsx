@@ -6,10 +6,7 @@ import StartScreen from './components/StartScreen.jsx'
 import Spinner from './components/spinner.jsx'
 
 // Load your API key from environment variables or directly (not recommended for production)
-const openai = new OpenAI({
-  dangerouslyAllowBrowser: true,
-  apiKey: 'REPLACE_WITH_API_KEY', // or replace with your key directly: 'sk-...'
-});
+
 
 const JeopardyGame = () => {
   const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
@@ -18,13 +15,19 @@ const JeopardyGame = () => {
   const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
   const [categories, setCategories] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [apiKey, setApiKey] = useState('null');
+
+  const openai = new OpenAI({
+    dangerouslyAllowBrowser: true,
+    apiKey: apiKey, // or replace with your key directly: 'sk-...'
+  });
 
   const [formData, setFormData] = useState({
     cat1: '',
     cat2: '',
     cat3: '',
     cat4: '',
-    cat5: ''
+    cat5: '',
   });
 
   const handleReset = () => {
@@ -33,13 +36,12 @@ const JeopardyGame = () => {
       cat2: '',
       cat3: '',
       cat4: '',
-      cat5: ''
+      cat5: '',
     });
   };
 
   const handleSubmit = () => {
     console.log('Current form data:', formData);
-    console.log(formData.cat1.toUpperCase());
     generateCategories();
   };
 
@@ -322,20 +324,28 @@ const JeopardyGame = () => {
     console.log('categories updated: ', categories)
   }, [categories])
 
+  const [currentAttempts, setCurrentAttempts] = useState(1);
+
   const handleAnswer = (selectedOption: any) => {
     if (selectedQuestion) {
       const isCorrect = selectedOption === selectedQuestion.correctAnswer;
-      const points = isCorrect ? selectedQuestion.points : -selectedQuestion.points;
-      const teamKey = `team${currentTeam}`;
-      setTeamScores(prev => ({
-        ...prev,
-        [teamKey]: prev[teamKey as 'team1' | 'team2'] + points
-      }));
-      setAnsweredQuestions(prev => new Set([...prev, selectedQuestion.id]));
+      
+      if(isCorrect) {
+        const points = isCorrect ? selectedQuestion.points : -selectedQuestion.points;
+        const teamKey = `team${currentTeam}`;
+        setTeamScores(prev => ({
+          ...prev,
+          [teamKey]: prev[teamKey as 'team1' | 'team2'] + points
+        }));
+        setAnsweredQuestions(prev => new Set([...prev, selectedQuestion.id]));
+
+      }
       
       // Switch teams if incorrect, stay same team if correct
       if (!isCorrect) {
+        setCurrentAttempts(prev => prev + 1);
         setCurrentTeam(currentTeam === 1 ? 2 : 1);
+        if(currentAttempts === 2) setAnsweredQuestions(prev => new Set([...prev, selectedQuestion.id]));
       }
       
       setSelectedQuestion(null);
@@ -358,6 +368,10 @@ const JeopardyGame = () => {
     setSelectedQuestion(null);
     setCurrentTeam(1);
   };
+
+  useEffect(() => {
+    console.log("API KEY IN USEFFECT", apiKey)
+  }, [apiKey])
 
   return (
     <div style={styles.container}>
@@ -519,7 +533,7 @@ const JeopardyGame = () => {
           </div>
         )}
       </div> :
-      (loading ? <Spinner /> : <StartScreen data={formData} setData={setFormData} submit={handleSubmit} />)
+      (loading ? <Spinner /> : <StartScreen data={formData} setData={setFormData} submit={handleSubmit} setApiKey={setApiKey} />)
       }
     </div>
   );

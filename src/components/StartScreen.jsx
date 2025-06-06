@@ -1,10 +1,15 @@
-export default function StartScreen({ data = {}, setData = () => {}, submit = () => {} }) {
+export default function StartScreen({ data = {}, setData = () => {}, submit = () => {}, setApiKey = () => {} }) {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setData(prev => ({
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleInputApiKeyChange = (e) => {
+    const { value } = e.target;
+    setApiKey(value);
   };
 
   return (
@@ -91,6 +96,19 @@ export default function StartScreen({ data = {}, setData = () => {}, submit = ()
             fontSize: '16px'
           }}
           placeholder="Category 5"
+        />
+        <input
+          type="text"
+          name="apiKey"
+          onChange={handleInputApiKeyChange}
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            fontSize: '16px'
+          }}
+          placeholder="OpenAI Key"
         />
         <button
         onClick={submit}>
