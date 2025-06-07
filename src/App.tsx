@@ -4,6 +4,8 @@ import { OpenAI } from 'openai';
 import StartScreen from './components/StartScreen.jsx' 
 // @ts-ignore
 import Spinner from './components/spinner.jsx'
+import { useSnackbar } from 'notistack'
+
 
 // Load your API key from environment variables or directly (not recommended for production)
 
@@ -16,6 +18,7 @@ const JeopardyGame = () => {
   const [categories, setCategories] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [apiKey, setApiKey] = useState('null');
+  const { enqueueSnackbar } = useSnackbar()
 
   const openai = new OpenAI({
     dangerouslyAllowBrowser: true,
@@ -338,6 +341,7 @@ const JeopardyGame = () => {
           [teamKey]: prev[teamKey as 'team1' | 'team2'] + points
         }));
         setAnsweredQuestions(prev => new Set([...prev, selectedQuestion.id]));
+        enqueueSnackbar('Correct!', {variant: 'success'})
 
       }
       
@@ -346,6 +350,7 @@ const JeopardyGame = () => {
         setCurrentAttempts(prev => prev + 1);
         setCurrentTeam(currentTeam === 1 ? 2 : 1);
         if(currentAttempts === 2) setAnsweredQuestions(prev => new Set([...prev, selectedQuestion.id]));
+        enqueueSnackbar('Incorrect!', {variant: 'error'})
       }
       
       setSelectedQuestion(null);
@@ -381,7 +386,6 @@ const JeopardyGame = () => {
         {/* Header */}
         <div>
           <h1 style={styles.title}>JEOPARDY!</h1>
-          
           
           {/* Team Scores */}
           <div style={styles.teamContainer}>
